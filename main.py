@@ -74,10 +74,11 @@ for enum in Columns:
     keys.append(enum)
 
 bot = interactions.Client(
-    token="ODIzNTUwNzAxMTk5ODE4NzYz.GJA5DJ.guxVG6sAX6Q3J9O1XZBTw90nXDUQ5Vd1w47l9o", intents=interactions.Intents.ALL)
+    token="", intents=interactions.Intents.ALL)
 GUILD_ID = 832085929262055494  # priv
 
-
+# TODO change GUILD_ID to 981965586844254208
+# TODO and also change the guild number to 2 on line number 187
 @bot.command(
     name="statistics",
     description="parent command",
