@@ -176,7 +176,6 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
         # i think some of this doesn't even fire but whatever
         if name == None:
             if results := user_exists(worksheet, ctx.author.name):
-
                 await send_embed(ctx, results)
                 return
             else:
@@ -184,7 +183,6 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 return
 
         if results := user_exists(worksheet, name.name):
-
             for user in bot.guilds[1].members:
                 if user.name == results[Columns.NAME]:
                     await send_embed(ctx, results)
@@ -228,7 +226,7 @@ async def send_embed(ctx, results):
         if not value:
             results[key] = "Not Set"
 
-    embed = interactions.Embed(color=0xFF77FF)
+    embed = interactions.Embed(color=random.randint(0, 65536))
     embed.set_author(name=results[Columns.NAME])
     embed.add_field(name="Available for Rite of Exile?",
                     value=results[Columns.AVAILABILITY], inline=True)
@@ -249,7 +247,6 @@ async def send_embed(ctx, results):
 
 
 def gc_init():
-    print('start init')
     """
     init pygsheets with service account and the stats spreadsheet.
     if it doesn't exist, create it.
@@ -264,18 +261,16 @@ def gc_init():
         print('stats spreadsheet not found, creating...')
         gc.create('stats')
         sh = gc.open('stats')
-
     wks = sh.sheet1
-    print('done with init')
     return wks
 
 
 def user_exists(wks, name):
-    global keys
-    print(f'starting lookup of {name}')
     """
     takes in worksheet object and finds given name. if it finds it, spit out related values
     """
+    global keys
+
     found = None
     final = {}
     row = None
@@ -294,13 +289,12 @@ def user_exists(wks, name):
             final[keys[index]] = cell.value
 
     final["ROW"] = row
-    print(f'returning final {final}')
     return final
 
 
 def new_user_row(wks):
     """
-    Finds an empty column to use for a new user to enter stats
+    Finds an empty c1000 to use for a new user to enter stats
     """
     for the_list in wks.range('A2:A1000'):
         for cell in the_list:
