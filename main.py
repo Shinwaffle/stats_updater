@@ -232,7 +232,8 @@ async def send_embed(ctx, results):
     embed.set_author(name=results[Columns.NAME])
     embed.add_field(name="Available for Rite of Exile?",
                     value=results[Columns.AVAILABILITY], inline=True)
-    embed.add_field(name="PVP CR", value=results[Columns.PVP_CR], inline=True)
+    embed.add_field(name="PVP CR",
+                    value=results[Columns.PVP_CR], inline=True)
     embed.add_field(name="Character CR",
                     value=results[Columns.CHAR_CR], inline=True)
     embed.add_field(name="Resonance",
@@ -241,7 +242,8 @@ async def send_embed(ctx, results):
                     value=results[Columns.PARAGON_LEVEL], inline=True)
     embed.add_field(name="Paragon Tree",
                     value=results[Columns.PARAGON_TREE], inline=True)
-    embed.add_field(name="Build", value=results[Columns.BUILD], inline=False)
+    embed.add_field(name="Build",
+                    value=results[Columns.BUILD], inline=False)
 
     await ctx.send(embeds=embed)
 
