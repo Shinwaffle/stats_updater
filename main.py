@@ -27,7 +27,7 @@ for enum in Columns:
 
 bot = interactions.Client(
     token="ODIzNTUwNzAxMTk5ODE4NzYz.GJA5DJ.guxVG6sAX6Q3J9O1XZBTw90nXDUQ5Vd1w47l9o", intents=interactions.Intents.ALL)
-GUILD_ID = 981965586844254208  # priv
+GUILD_ID = 981965586844254208
 
 
 @bot.command(
@@ -122,8 +122,10 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 (paragon_tree, Columns.PARAGON_TREE),
                 (build, Columns.BUILD)]
 
-    worksheet = in_a_clan(ctx)
+    #worksheet = in_a_clan(ctx)
+    global worksheet
 
+    await ctx.defer()
     if sub_command == "show":
         # name is of Member type if specified, think of it as "user"
         # i think some of this doesn't even fire but whatever
@@ -161,7 +163,6 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
             for stat in to_check:
                 if stat[0] is not None:
                     worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
-            resuts = user_exists(worksheet, ctx.author.name)
             await ctx.send('Updated!', ephemeral=True)
             return
 
