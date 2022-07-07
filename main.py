@@ -1,51 +1,3 @@
-"""Shinwaffle
-
-command: /stats
-args:
-availability: bool (self explanatory)
-pvp CR: int
-char sheet CR: int
-resonance: int
-paragon level: int
-paragon tree: string 
-build notes: string
-
-on the sheet itself, it will show "nickname" and "discord name" first
-then the args that were provided, cause yeah.
-
-command: /exit
-only for me, checks if its EXACTLY me and then "await client.close()"
-to gracefully shut down the bot, prevents a lot of annoying backend work.
-
-"inhouse player card", i have an idea of what they're talking about and
-honestly? could pull it off tbh
-
-
-first, find an api that is actually friendly to use with sheets
-(if it exists with google keep then sheets for sure has one)
-
-create a service account with it because you'll want to transport this
-to the cloud, for obvious reasons.
-
-once you can successfully retrieve the sheet's data, here is how this will work:
-
-I am guessing with how slash commands work (and how you can have kwargs and shit)
-is that you will get arguments in a dictionary. 
-sort it just like it is above and then schmack that into a column. (horizontal thing)
-
-but FIRST, you need to have a check routine.
-(i was thinking about creating a cache but this api will NEVER be rate limited lmao)
-grab the name from the second row (that is the real discord name)
-and then match it
-IF it matches:
-    update the values (IF PROVIDED)
-    spit out the updated values
-    if no values provided: spit it back out at them
-IF it doesn't:
-    create a new entry
-    spit out the new entry
-
-"""
 import interactions
 
 import pygsheets
@@ -74,11 +26,10 @@ for enum in Columns:
     keys.append(enum)
 
 bot = interactions.Client(
-    token="", intents=interactions.Intents.ALL)
-GUILD_ID = 832085929262055494  # priv
+    token="ODIzNTUwNzAxMTk5ODE4NzYz.GJA5DJ.guxVG6sAX6Q3J9O1XZBTw90nXDUQ5Vd1w47l9o", intents=interactions.Intents.ALL)
+GUILD_ID = 981965586844254208  # priv
 
-# TODO change GUILD_ID to 981965586844254208
-# TODO and also change the guild number to 2 on line number 187
+
 @bot.command(
     name="statistics",
     description="parent command",
@@ -163,7 +114,6 @@ GUILD_ID = 832085929262055494  # priv
     ],
 )
 async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, availability=None, pvp_cr=None, char_cr=None, resonance=None, paragon_level=None, paragon_tree=None, build=None):
-    global worksheet
     to_check = [(availability, Columns.AVAILABILITY),
                 (pvp_cr, Columns.PVP_CR),
                 (char_cr, Columns.CHAR_CR),
@@ -171,6 +121,8 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 (paragon_level, Columns.PARAGON_LEVEL),
                 (paragon_tree, Columns.PARAGON_TREE),
                 (build, Columns.BUILD)]
+
+    worksheet = in_a_clan(ctx)
 
     if sub_command == "show":
         # name is of Member type if specified, think of it as "user"
@@ -184,7 +136,7 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 return
 
         if results := user_exists(worksheet, name.name):
-            for user in bot.guilds[1].members:
+            for user in bot.guilds[2].members:
                 if user.name == results[Columns.NAME]:
                     await send_embed(ctx, results)
                     return
@@ -266,6 +218,36 @@ def gc_init():
     return wks
 
 
+def gc_nonclan_init():
+    """
+    init pygsheets with service account and the stats spreadsheet.
+    if it doesn't exist, create it.
+
+    returns: sheet1 of stats to edit info
+    """
+    gc = pygsheets.authorize(service_file='.stats-updater.json')
+    sh = None
+    try:
+        sh = gc.open('stats_nonclan')
+    except SpreadsheetNotFound as ex:
+        print('stats_nonclan spreadsheet not found, creating...')
+        gc.create('stats_nonclan')
+        sh = gc.open('stats_nonclan')
+    wks = sh.sheet1
+    return wks
+
+
+def in_a_clan(ctx):
+    global worksheet, worksheet_nonclan
+    # ancient defenders then legion then winter clan
+    clans = [989278711478124655, 989278770009632858, 983855347867451452]
+    for role in ctx.author.roles:
+        if role in clans:
+            return worksheet
+
+    return worksheet_nonclan
+
+
 def user_exists(wks, name):
     """
     takes in worksheet object and finds given name. if it finds it, spit out related values
@@ -304,4 +286,5 @@ def new_user_row(wks):
 
 
 worksheet = gc_init()
+worksheet_nonclan = gc_nonclan_init()
 bot.start()
