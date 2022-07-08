@@ -60,8 +60,19 @@ GUILD_ID = 981965586844254208
                 interactions.Option(
                     name="availability",
                     description="Will you be available for Rite of Exile?",
-                    type=interactions.OptionType.BOOLEAN,
+                    type=interactions.OptionType.STRING,
                     required=False,
+                    choices=[
+                        interactions.Choice(
+                            name="Yes", value='Yes'
+                        ),
+                        interactions.Choice(
+                            name="Maybe", value='Maybe'
+                        ),
+                        interactions.Choice(
+                            name="No", value='No'
+                        )
+                    ]
                 ),
                 interactions.Option(
                     name="pvp_cr",
@@ -212,10 +223,6 @@ async def send_embed(ctx, results):
     """
     Creates a pretty embed for the bot to send in the context provided
     """
-    if results[Columns.AVAILABILITY] == 'TRUE':
-        results[Columns.AVAILABILITY] = 'Yes'
-    else:
-        results[Columns.AVAILABILITY] = 'No'
 
     for key, value in results.items():
         if not value:
