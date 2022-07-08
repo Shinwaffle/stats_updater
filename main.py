@@ -1,3 +1,4 @@
+print('we are here')
 import interactions
 
 import pygsheets
@@ -122,11 +123,11 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 (paragon_tree, Columns.PARAGON_TREE),
                 (build, Columns.BUILD)]
 
-    #worksheet = in_a_clan(ctx)
-    global worksheet
+    worksheet = in_a_clan(ctx)
+    # This defer hopefully helps with the "command didn't respond" thing
 
-    await ctx.defer()
     if sub_command == "show":
+        await ctx.defer(ephemeral=False)
         # name is of Member type if specified, think of it as "user"
         # i think some of this doesn't even fire but whatever
         if name == None:
@@ -147,6 +148,7 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
             return
 
     if sub_command == "set":
+        await ctx.defer(ephemeral=True)
         if results := user_exists(worksheet, ctx.author.name):
             worksheet.update_value(
                 f'{Columns.NAME}{results["ROW"]}', ctx.author.name)
@@ -165,6 +167,10 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                     worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
             await ctx.send('Updated!', ephemeral=True)
             return
+    await ctx.send('Try the command again. This is not an error and should be reported.', ephemeral=True)
+    return
+
+
 
 
 async def send_embed(ctx, results):
@@ -207,7 +213,7 @@ def gc_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='.stats-updater.json')
+    gc = pygsheets.authorize(service_file='/home/ubuntu/stats_updater/.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats')
@@ -226,7 +232,7 @@ def gc_nonclan_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='.stats-updater.json')
+    gc = pygsheets.authorize(service_file='/root/.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats_nonclan')

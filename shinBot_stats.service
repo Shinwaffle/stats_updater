@@ -1,0 +1,14 @@
+[Unit]
+Description=shinBot stats tracker, starts after network connection
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+ExecStart=python3 main.py
+ExecStartPre=source /home/ubuntu/stats_updater/venv/bin/activate
+RuntimeDirectory=/home/ubuntu/stats_updater
+
+[Install]
+WantedBy=multi-user.target 
