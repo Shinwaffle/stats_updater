@@ -253,7 +253,7 @@ def gc_init():
     returns: sheet1 of stats to edit info
     """
     gc = pygsheets.authorize(
-        service_file='.stats-updater.json')
+        service_file='/root/.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats')
@@ -273,7 +273,7 @@ def gc_nonclan_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='.stats-updater.json')
+    gc = pygsheets.authorize(service_file='/root/.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats_nonclan')
