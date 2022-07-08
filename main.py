@@ -1,11 +1,9 @@
-print('we are here')
-import interactions
-
-import pygsheets
-from pygsheets.exceptions import SpreadsheetNotFound
-
-import random
 from enum import Enum
+import random
+from pygsheets.exceptions import SpreadsheetNotFound
+import pygsheets
+import interactions
+print('we are here')
 
 
 class Columns(str, Enum):
@@ -125,12 +123,8 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
 
     worksheet = in_a_clan(ctx)
     # This defer hopefully helps with the "command didn't respond" thing
-
-<<<<<<< HEAD
-=======
     await ctx.defer(ephemeral=True)
->>>>>>> 341cae0 (ephemeral defer)
-    if sub_command == "show":
+   if sub_command == "show":
         await ctx.defer(ephemeral=False)
         # name is of Member type if specified, think of it as "user"
         # i think some of this doesn't even fire but whatever
@@ -175,8 +169,6 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
     return
 
 
-
-
 async def send_embed(ctx, results):
     """
     Creates a pretty embed for the bot to send in the context provided
@@ -217,7 +209,8 @@ def gc_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='/home/ubuntu/stats_updater/.stats-updater.json')
+    gc = pygsheets.authorize(
+        service_file='/home/ubuntu/stats_updater/.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats')
