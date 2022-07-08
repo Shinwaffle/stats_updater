@@ -242,7 +242,8 @@ async def send_embed(ctx, results):
     for field in embed.fields:
         debug += f'{field.value}\n'
     logging.info(f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
-    await ctx.message.channel.send(embeds=embed)
+    await ctx.get_channel().send(embeds=embed)
+
 
 
 def gc_init():
