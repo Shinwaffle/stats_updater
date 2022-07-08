@@ -225,6 +225,8 @@ async def send_embed(ctx, results):
     """
 
     for key, value in results.items():
+        if value == -1:
+            results[key] = "Max"
         if not value:
             logging.debug(f'Set {results[key]} to "Not Set"')
             results[key] = "Not Set"
