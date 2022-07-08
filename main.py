@@ -124,7 +124,7 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
     worksheet = in_a_clan(ctx)
     # This defer hopefully helps with the "command didn't respond" thing
     await ctx.defer(ephemeral=True)
-   if sub_command == "show":
+    if sub_command == "show":
         await ctx.defer(ephemeral=False)
         # name is of Member type if specified, think of it as "user"
         # i think some of this doesn't even fire but whatever
