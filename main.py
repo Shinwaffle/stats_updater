@@ -147,12 +147,13 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
 
 
 async def show_command(ctx, worksheet, name):
-    await ctx.defer()
+    await ctx.defer(ephemeral=True)
     # name is of Member type if specified, think of it as "user"
     # i think some of this doesn't even fire but whatever
     if name == None:
         if results := user_exists(worksheet, ctx.author.name):
             logging.info(f'Found user {ctx.author.user}, now calling send_embed')
+            await ctx.send(f'Found user! Sending stats...')
             await send_embed(ctx, results)
             return
         else:
@@ -162,6 +163,7 @@ async def show_command(ctx, worksheet, name):
 
     if results := user_exists(worksheet, name.name):
         logging.debug(f'Found lookup of user {name.name}')
+        await ctx.send(f'Found user! Sending stats...')
         await send_embed(ctx, results)
         return
     else:
@@ -326,13 +328,13 @@ def user_exists(wks, name):
 
 
 def new_user_row(wks):
-    """
+    """q
     Finds an empty c1000 to use for a new user to enter stats
     """
     for the_list in wks.range('A2:A1000'):
         for cell in the_list:
             if cell.value == '':
-                loggign.info(f'New user row was requested. Giving {cell.row}')
+                logging.info(f'New user row was requested. Giving {cell.row}')
                 return cell.row
 
 @bot.event
