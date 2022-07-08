@@ -3,9 +3,9 @@ import random
 from pygsheets.exceptions import SpreadsheetNotFound
 import pygsheets
 import interactions
-print('we are here')
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
 class Columns(str, Enum):
     """
     Enum representating the columns used in the spreadsheet
@@ -122,50 +122,77 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 (build, Columns.BUILD)]
 
     worksheet = in_a_clan(ctx)
-    # This defer hopefully helps with the "command didn't respond" thing
-    await ctx.defer(ephemeral=True)
     if sub_command == "show":
-        await ctx.defer(ephemeral=False)
-        # name is of Member type if specified, think of it as "user"
-        # i think some of this doesn't even fire but whatever
-        if name == None:
-            if results := user_exists(worksheet, ctx.author.name):
-                await send_embed(ctx, results)
-                return
-            else:
-                await ctx.send("That user doesn't exist!", ephemeral=True)
-                return
+        await show_command(ctx, worksheet, name)
+        return
+    elif sub_command == "set":
+        await set_command(ctx, worksheet, to_check)
+        return
+    else:
+        await ctx.send('Something went wrong. Please try again', ephemeral=True)
+        logging.critical("We have reached end of cmd without a return."
+              f"Name: {ctx.author.name}"
+              f"Dumb of parameters provided: {to_check}")
+        return
 
-        if results := user_exists(worksheet, name.name):
-            for user in bot.guilds[2].members:
-                if user.name == results[Columns.NAME]:
-                    await send_embed(ctx, results)
-                    return
-        else:
-            await ctx.send("That user doesn't exist!", ephemeral=True)
-            return
 
-    if sub_command == "set":
-        await ctx.defer(ephemeral=True)
+async def show_command(ctx, worksheet, name):
+    await ctx.defer()
+    # name is of Member type if specified, think of it as "user"
+    # i think some of this doesn't even fire but whatever
+    if name == None:
         if results := user_exists(worksheet, ctx.author.name):
-            worksheet.update_value(
-                f'{Columns.NAME}{results["ROW"]}', ctx.author.name)
-            for stat in to_check:
-                if stat[0] is not None:
-                    worksheet.update_value(
-                        f'{stat[1]}{results["ROW"]}', stat[0])
-            await ctx.send('Updated!', ephemeral=True)
+            logging.info(f'Found user {ctx.author.user}, now calling send_embed')
+            await send_embed(ctx, results)
             return
         else:
-            new_user = new_user_row(worksheet)
-            worksheet.update_value(
-                f'{Columns.NAME}{new_user}', ctx.author.name)
-            for stat in to_check:
-                if stat[0] is not None:
-                    worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
-            await ctx.send('Updated!', ephemeral=True)
+            logging.debug(f'Did not find user {name.name}.')
+            await ctx.send("You haven't put in your info yet!", ephemeral=True)
             return
-    await ctx.send('Try the command again. This is not an error and should be reported.', ephemeral=True)
+
+    if results := user_exists(worksheet, name.name):
+        logging.debug(f'Found lookup of user {name.name}')
+        await send_embed(ctx, results)
+        return
+    else:
+        logging.debug(f"Did not find user {name.name}")
+        await ctx.send("That user doesn't exist!", ephemeral=True)
+        return
+
+
+async def set_command(ctx, worksheet, to_check):
+    await ctx.defer(ephemeral=True)
+    if results := user_exists(worksheet, ctx.author.name):
+        worksheet.update_value(
+            f'{Columns.NAME}{results["ROW"]}', ctx.author.name)
+        for stat in to_check:
+            if stat[0] is not None:
+                try:
+                    if len(stat[0]) > 1024:
+                        logging.debug(f'Caught input longer than 1024 {stat[0]}')
+                        await ctx.send('One of your fields is beyond 1024 characters! considering shortening it.')
+                        return
+                except TypeError as ex:
+                    pass
+                worksheet.update_value(
+                    f'{stat[1]}{results["ROW"]}', stat[0])
+                logging.debug(f'Synced change {stat[0]} to {ctx.author.name}')
+        logging.info(f'updated user {ctx.author.name}')
+        await ctx.send('Updated!', ephemeral=True)
+        return
+    else:
+        new_user = new_user_row(worksheet)
+        worksheet.update_value(
+            f'{Columns.NAME}{new_user}', ctx.author.name)
+        for stat in to_check:
+            if stat[0] is not None:
+                worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
+                logging.debug(f'Synced change {stat[0]} to {ctx.author.name}')
+        logging.info(f'updated new user {ctx.author.name}')
+        await ctx.send('Updated!', ephemeral=True)
+        return
+    logging.error(f'Could not update user {ctx.author.name} with values {to_check}')
+    await ctx.send(f'Could not update user.', ephemeral=True)
     return
 
 
@@ -180,6 +207,7 @@ async def send_embed(ctx, results):
 
     for key, value in results.items():
         if not value:
+            logging.debug(f'Set {results[key]} to "Not Set"')
             results[key] = "Not Set"
 
     embed = interactions.Embed(color=random.randint(0, 65536))
@@ -198,7 +226,10 @@ async def send_embed(ctx, results):
                     value=results[Columns.PARAGON_TREE], inline=True)
     embed.add_field(name="Build",
                     value=results[Columns.BUILD], inline=False)
-
+    debug = ""
+    for field in embed.fields:
+        debug += f'{field.value}\n'
+    logging.info(f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
     await ctx.send(embeds=embed)
 
 
@@ -210,15 +241,16 @@ def gc_init():
     returns: sheet1 of stats to edit info
     """
     gc = pygsheets.authorize(
-        service_file='/home/ubuntu/stats_updater/.stats-updater.json')
+        service_file='.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats')
     except SpreadsheetNotFound as ex:
-        print('stats spreadsheet not found, creating...')
+        logging.info('stats spreadsheet not found, creating...')
         gc.create('stats')
         sh = gc.open('stats')
     wks = sh.sheet1
+    wks.link()
     return wks
 
 
@@ -229,15 +261,16 @@ def gc_nonclan_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='/root/.stats-updater.json')
+    gc = pygsheets.authorize(service_file='.stats-updater.json')
     sh = None
     try:
         sh = gc.open('stats_nonclan')
     except SpreadsheetNotFound as ex:
-        print('stats_nonclan spreadsheet not found, creating...')
+        logging.info('stats_nonclan spreadsheet not found, creating...')
         gc.create('stats_nonclan')
         sh = gc.open('stats_nonclan')
     wks = sh.sheet1
+    wks.link()
     return wks
 
 
@@ -258,6 +291,7 @@ def user_exists(wks, name):
     """
     global keys
 
+    logging.debug(f'Looking up name {name}')
     found = None
     final = {}
     row = None
@@ -270,12 +304,14 @@ def user_exists(wks, name):
                     f'{Columns.NAME}{cell.row}:{Columns.BUILD}{cell.row}')
                 row = cell.row
     if not found:
+        logging.info(f'Requested user {name} does not exist.')
         return None
     for thingy in found:
         for index, cell in enumerate(thingy):
             final[keys[index]] = cell.value
 
     final["ROW"] = row
+    logging.info(f'Returning final value of {final}')
     return final
 
 
@@ -286,9 +322,12 @@ def new_user_row(wks):
     for the_list in wks.range('A2:A1000'):
         for cell in the_list:
             if cell.value == '':
+                loggign.info(f'New user row was requested. Giving {cell.row}')
                 return cell.row
 
-
+@bot.event
+async def on_ready():
+    logging.info(f'logged in and init both sheets')
 worksheet = gc_init()
 worksheet_nonclan = gc_nonclan_init()
 bot.start()
