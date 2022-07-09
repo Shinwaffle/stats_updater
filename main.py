@@ -129,13 +129,13 @@ GUILD_ID = 981965586844254208
     ],
 )
 async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, availability=None, pvp_cr=None, char_cr=None, resonance=None, paragon_level=None, paragon_tree=None, build=None):
-    to_check = [(availability, Columns.AVAILABILITY),
-                (pvp_cr, Columns.PVP_CR),
-                (char_cr, Columns.CHAR_CR),
-                (resonance, Columns.RESONANCE),
-                (paragon_level, Columns.PARAGON_LEVEL),
-                (paragon_tree, Columns.PARAGON_TREE),
-                (build, Columns.BUILD)]
+    to_check = [[availability, Columns.AVAILABILITY],
+                [pvp_cr, Columns.PVP_CR],
+                [char_cr, Columns.CHAR_CR],
+                [resonance, Columns.RESONANCE],
+                [paragon_level, Columns.PARAGON_LEVEL],
+                [paragon_tree, Columns.PARAGON_TREE],
+                [build, Columns.BUILD]]
 
     worksheet = in_a_clan(ctx)
     if sub_command == "info":
