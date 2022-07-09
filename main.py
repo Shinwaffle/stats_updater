@@ -197,7 +197,7 @@ async def set_command(ctx, worksheet, to_check):
                         return
                 except TypeError as ex:
                     pass
-                if stat[0] is -1:
+                if stat[0] == -1:
                     worksheet.update_value(f'{stat[1]}{results["ROW"]}', 'Max')
                     logging.debug(f'Synced change Max to {ctx.author.name}')
                     continue
@@ -213,7 +213,7 @@ async def set_command(ctx, worksheet, to_check):
             f'{Columns.NAME}{new_user}', ctx.author.name)
         for stat in to_check:
             if stat[0] is not None:
-                if stat[0] is -1:
+                if stat[0] == -1:
                     worksheet.update_value(f'{stat[1]}{results["ROW"]}', 'Max')
                     logging.debug(f'Synced change Max to {ctx.author.name}')
                     continue
