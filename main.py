@@ -9,6 +9,8 @@ TOKEN = os.environ.get("TOKEN")
 PYGSHEETS_BOTACC_PATH = ".service.json"
 
 logging.basicConfig(level=logging.INFO)
+
+
 class Columns(str, Enum):
     """
     Enum representating the columns used in the spreadsheet
@@ -27,8 +29,9 @@ keys = []
 for enum in Columns:
     keys.append(enum)
 
+print()
 bot = interactions.Client(
-    token=TOKEN, intents=interactions.Intents.ALL)
+    token="ODIzNTUwNzAxMTk5ODE4NzYz.GPqSt_.CoiU9r9ef29Ltr71t49eT8xIPrwOVeYyWFq_xQ", intents=interactions.Intents.ALL)
 GUILD_ID = 981965586844254208
 
 
@@ -155,8 +158,8 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
     else:
         await ctx.send('Something went wrong. Please try again', ephemeral=True)
         logging.critical("We have reached end of cmd without a return."
-              f"Name: {ctx.author.name}"
-              f"Dumb of parameters provided: {to_check}")
+                         f"Name: {ctx.author.name}"
+                         f"Number of parameters provided: {to_check}")
         return
 
 
@@ -166,7 +169,8 @@ async def show_command(ctx, worksheet, name):
     # i think some of this doesn't even fire but whatever
     if name == None:
         if results := user_exists(worksheet, ctx.author.name):
-            logging.info(f'Found user {ctx.author.user}, now calling send_embed')
+            logging.info(
+                f'Found user {ctx.author.user}, now calling send_embed')
             await ctx.send(f'Found user! Sending stats...')
             await send_embed(ctx, results)
             return
@@ -195,7 +199,8 @@ async def set_command(ctx, worksheet, to_check):
             if stat[0] is not None:
                 try:
                     if len(stat[0]) > 1024:
-                        logging.debug(f'Caught input longer than 1024 {stat[0]}')
+                        logging.debug(
+                            f'Caught input longer than 1024 {stat[0]}')
                         await ctx.send('One of your fields is beyond 1024 characters! considering shortening it.')
                         return
                 except TypeError as ex:
@@ -225,7 +230,8 @@ async def set_command(ctx, worksheet, to_check):
         logging.info(f'updated new user {ctx.author.name}')
         await ctx.send('Updated!', ephemeral=True)
         return
-    logging.error(f'Could not update user {ctx.author.name} with values {to_check}')
+    logging.error(
+        f'Could not update user {ctx.author.name} with values {to_check}')
     await ctx.send(f'Could not update user.', ephemeral=True)
     return
 
@@ -259,10 +265,10 @@ async def send_embed(ctx, results):
     debug = ""
     for field in embed.fields:
         debug += f'{field.value}\n'
-    logging.info(f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
+    logging.info(
+        f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
     channel = await ctx.get_channel()
     await channel.send(embeds=embed)
-
 
 
 def gc_init():
@@ -356,6 +362,7 @@ def new_user_row(wks):
             if cell.value == '':
                 logging.info(f'New user row was requested. Giving {cell.row}')
                 return cell.row
+
 
 @bot.event
 async def on_ready():
