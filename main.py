@@ -5,6 +5,9 @@ import pygsheets
 import interactions
 import logging
 
+TOKEN = ""
+PYGSHEETS_BOTACC_PATH = "/home/shin/Downloads/service.json"
+
 logging.basicConfig(level=logging.INFO)
 class Columns(str, Enum):
     """
@@ -25,7 +28,7 @@ for enum in Columns:
     keys.append(enum)
 
 bot = interactions.Client(
-    token="ODIzNTUwNzAxMTk5ODE4NzYz.GJA5DJ.guxVG6sAX6Q3J9O1XZBTw90nXDUQ5Vd1w47l9o", intents=interactions.Intents.ALL)
+    token=TOKEN, intents=interactions.Intents.ALL)
 GUILD_ID = 981965586844254208
 
 
@@ -270,7 +273,7 @@ def gc_init():
     returns: sheet1 of stats to edit info
     """
     gc = pygsheets.authorize(
-        service_file='/root/.stats-updater.json')
+        service_file=PYGSHEETS_BOTACC_PATH)
     sh = None
     try:
         sh = gc.open('stats')
@@ -290,7 +293,7 @@ def gc_nonclan_init():
 
     returns: sheet1 of stats to edit info
     """
-    gc = pygsheets.authorize(service_file='/root/.stats-updater.json')
+    gc = pygsheets.authorize(service_file=PYGSHEETS_BOTACC_PATH)
     sh = None
     try:
         sh = gc.open('stats_nonclan')
