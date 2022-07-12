@@ -29,9 +29,8 @@ keys = []
 for enum in Columns:
     keys.append(enum)
 
-print()
 bot = interactions.Client(
-    token="ODIzNTUwNzAxMTk5ODE4NzYz.GPqSt_.CoiU9r9ef29Ltr71t49eT8xIPrwOVeYyWFq_xQ", intents=interactions.Intents.ALL)
+    token=TOKEN, intents=interactions.Intents.ALL)
 GUILD_ID = 981965586844254208
 
 
