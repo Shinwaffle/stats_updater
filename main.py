@@ -6,7 +6,7 @@ import interactions
 import logging
 import os
 TOKEN = os.environ.get("TOKEN")
-PYGSHEETS_BOTACC_PATH = ".service.json"
+PYGSHEETS_BOTACC_PATH = os.environ.get("PYGSHEETS_BOTACC_PATH")
 
 logging.basicConfig(level=logging.INFO)
 
