@@ -4,9 +4,9 @@ from pygsheets.exceptions import SpreadsheetNotFound
 import pygsheets
 import interactions
 import logging
-
-TOKEN = ""
-PYGSHEETS_BOTACC_PATH = "/home/shin/Downloads/service.json"
+import os
+TOKEN = os.environ.get("TOKEN")
+PYGSHEETS_BOTACC_PATH = os.environ.get("PYGSHEETS_BOTACC_PATH")
 
 logging.basicConfig(level=logging.INFO)
 class Columns(str, Enum):
