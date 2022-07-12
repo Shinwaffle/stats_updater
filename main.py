@@ -144,7 +144,7 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
 
     worksheet = in_a_clan(ctx)
     if sub_command == "info":
-        await ctx.send('Link to spreadsheet for people in a clan (Winter Clan, Ancient Defenders, Legion): https://docs.google.com/spreadsheets/d/1Au1MPBzY7If-u9pC-SWJ0_M7sG1CCIAI2XBjiTHhsHA/edit#gid=0\n'
+        await ctx.send('Link to spreadsheet for people in a clan (Winter Clan, Ancient Defenders, Legion): https://docs.google.com/spreadsheets/d/1EezXrKVAaoXGyAis7u5j_70iUiPZhGJwp82akXtdeXQ/edit?usp=sharing\n'
                        'Link to spreadsheet for everyone else: https://docs.google.com/spreadsheets/d/1TvnuY4fSNcAPCNir0m2Uy_cWcSqQjXzcvWlz8T4INxs/edit#gid=0\n'
                        'Link to youtube video on how to use the command: https://www.youtube.com/watch?v=IWRB_7_-r2g', ephemeral=True)
         return
