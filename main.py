@@ -227,7 +227,7 @@ async def set_command(ctx, worksheet, to_check):
                 worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
                 logging.debug(f'Synced change {stat[0]} to {ctx.author.name}')
         logging.info(f'updated new user {ctx.author.name}')
-        await ctx.send('Updated!', ephemeral=True)
+        await ctx.send('Updated! Make sure to sign up for Rite of Exile in #rite-of-exile because THIS DOESNT COUNT AS A SIGN UP!!!!!!!', ephemeral=True)
         return
     logging.error(
         f'Could not update user {ctx.author.name} with values {to_check}')
