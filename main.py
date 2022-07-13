@@ -212,7 +212,7 @@ async def set_command(ctx, worksheet, to_check):
                     f'{stat[1]}{results["ROW"]}', stat[0])
                 logging.debug(f'Synced change {stat[0]} to {ctx.author.name}')
         logging.info(f'updated user {ctx.author.name}')
-        await ctx.send('Updated!', ephemeral=True)
+        await ctx.send('Updated! Make sure to sign up for Rite of Exile in #rite-of-exile because THIS DOESNT COUNT AS A SIGN UP!!!!!!!', ephemeral=True)
         return
     else:
         new_user = new_user_row(worksheet)
