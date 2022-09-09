@@ -198,15 +198,21 @@ async def show_command(ctx, worksheet, name):
         if name is None:
             if df.loc[(df['Name'] == ctx.author.name)].empty:
                 await ctx.send("you haven't put in your info yet!")
+                return
             else:
-                # send embed
-                ...
+                stats = df.loc[df.loc[(
+                    df['Name'] == ctx.author.name)].index[0]].tolist()
+                await send_embed(ctx, stats)
+                return
+
         else:
             if df.loc[(df['Name'] == ctx.author.name)].empty:
                 await ctx.send("that person hasn't put in their info yet!")
+                return
             else:
-                # send embed
-                ...
+                stats = df.loc[df.loc[(df['Name'] == name)].index[0]].tolist()
+                await send_embed(ctx, stats)
+                return
 
 
 async def set_command(ctx, worksheet, to_check):
@@ -302,6 +308,14 @@ async def set_command(ctx, worksheet, to_check):
             for column, stat in zip(columns, stats):
                 df.loc[index, [column]] = stat
         save_changes(df, guild_id)
+        return
+
+
+def _stat_normalization(guild_id, name):
+    """Helper function
+    Finds corresponding user and returns a nice list of stats
+    """
+    ...
 
 
 async def send_embed(ctx, results):
@@ -313,8 +327,6 @@ async def send_embed(ctx, results):
         if not value:
             logging.debug(f'Set {results[key]} to "Not Set"')
             results[key] = "Not Set"
-
-    # look into EmbedImageStruct for images
 
     embed = interactions.Embed(color=random.randint(0, 65536))
     embed.set_author(name=results[Columns.NAME])
@@ -332,6 +344,25 @@ async def send_embed(ctx, results):
                     value=results[Columns.PARAGON_TREE], inline=True)
     embed.add_field(name="Build",
                     value=results[Columns.BUILD], inline=False)
+
+    """
+    embed = interactions.Embed(color=random.randint(0, 65536))
+    embed.set_author(name=results[0]) # get author icon url here
+    embed.add_field(name="Available for Rite of Exile?",
+                    value=results[1], inline=True)
+    embed.add_field(name="PVP CR",
+                    value=results[2], inline=True)
+    embed.add_field(name="Character CR",
+                    value=results[3], inline=True)
+    embed.add_field(name="Resonance",
+                    value=results[4], inline=True)
+    embed.add_field(name="Paragon Level",
+                    value=results[5], inline=True)
+    embed.add_field(name="Paragon Tree",
+                    value=results[6], inline=True)
+    embed.add_field(name="Build",
+                    value=results[7], inline=False)    
+    """
     debug = ""
     for field in embed.fields:
         debug += f'{field.value}\n'
