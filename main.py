@@ -7,7 +7,7 @@ import logging
 import os
 import shutil
 import pandas as pd
-TOKEN = "OTk2MjUwMDM4NzY4NTIxMzQ2.GWV6RX.8yrjyh8VW2O-lAruKFtgoB_wOyEz2BwUqLox9o"
+TOKEN = ""
 PYGSHEETS_BOTACC_PATH = os.environ.get("PYGSHEETS_BOTACC_PATH")
 
 logging.basicConfig(level=logging.INFO)
