@@ -5,7 +5,9 @@ import pygsheets
 import interactions
 import logging
 import os
-TOKEN = os.environ.get("TOKEN")
+import shutil
+import pandas as pd
+TOKEN = "OTk2MjUwMDM4NzY4NTIxMzQ2.GWV6RX.8yrjyh8VW2O-lAruKFtgoB_wOyEz2BwUqLox9o"
 PYGSHEETS_BOTACC_PATH = os.environ.get("PYGSHEETS_BOTACC_PATH")
 
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +30,11 @@ class Columns(str, Enum):
 keys = []
 for enum in Columns:
     keys.append(enum)
+gc = pygsheets.authorize(service_file=PYGSHEETS_BOTACC_PATH)
 
 bot = interactions.Client(
     token=TOKEN, intents=interactions.Intents.ALL)
-GUILD_ID = 981965586844254208
+GUILD_ID = 996247141553033327
 
 
 @bot.command(
@@ -142,6 +145,7 @@ async def cmd(ctx: interactions.CommandContext, sub_command: str, name=None, ava
                 [paragon_tree, Columns.PARAGON_TREE],
                 [build, Columns.BUILD]]
 
+    guild_id = ctx.get_guild().id
     worksheet = in_a_clan(ctx)
     if sub_command == "info":
         await ctx.send('Link to spreadsheet for people in a clan (Winter Clan, Ancient Defenders, Legion): https://docs.google.com/spreadsheets/d/1EezXrKVAaoXGyAis7u5j_70iUiPZhGJwp82akXtdeXQ/edit?usp=sharing\n'
@@ -188,6 +192,22 @@ async def show_command(ctx, worksheet, name):
         await ctx.send("That user doesn't exist!", ephemeral=True)
         return
 
+    async def show_command_test(ctx, name):
+        df = get_table(guild_id)
+        if name is None:
+            if df.loc[(df['Name'] == ctx.author.name)].empty:
+                await ctx.send("you haven't put in your info yet!")
+            else:
+                # send embed
+                ...
+        else:
+            if df.loc[(df['Name'] == ctx.author.name)].empty:
+                await ctx.send("that person hasn't put in their info yet!")
+            else:
+                #send embed
+                ...
+        
+
 
 async def set_command(ctx, worksheet, to_check):
     await ctx.defer(ephemeral=True)
@@ -227,12 +247,38 @@ async def set_command(ctx, worksheet, to_check):
                 worksheet.update_value(f'{stat[1]}{new_user}', stat[0])
                 logging.debug(f'Synced change {stat[0]} to {ctx.author.name}')
         logging.info(f'updated new user {ctx.author.name}')
-        await ctx.send('Updated! Make sure to sign up for Rite of Exile in #rite-of-exile because THIS DOESNT COUNT AS A SIGN UP!!!!!!!', ephemeral=True)
+        await ctx.send('Updated!', ephemeral=True)
         return
     logging.error(
         f'Could not update user {ctx.author.name} with values {to_check}')
     await ctx.send(f'Could not update user.', ephemeral=True)
     return
+
+    async def _testing_function():
+        df = get_table(guild_id)
+        columns = ['Name', 
+                   "Availability", 
+                   "PVP CR", 
+                   "Character CR", 
+                   "Resonance",
+                   "Paragon Level",
+                   "Paragon Tree",
+                   "Build"]
+        stats = []
+        for stat in to_check:
+            stats.append(stat[0])
+        
+        # do your checks and normalization here
+        # -1, too long, None/NaN -> Not Set
+        if df.loc[(df['Name'] == ctx.author.name)].empty:
+            df = pd.concat([df, pd.DataFrame([stats], columns=columns)])
+        else:
+            index = df.loc[(df['Name'] == ctx.author.name)].index[0]
+            for column, stat in zip(columns, stats):
+                df.loc[index, [column]] = stat
+        save_changes(df, guild_id)
+
+        # check on pc for rest
 
 
 async def send_embed(ctx, results):
@@ -244,6 +290,9 @@ async def send_embed(ctx, results):
         if not value:
             logging.debug(f'Set {results[key]} to "Not Set"')
             results[key] = "Not Set"
+
+
+    # look into EmbedImageStruct for images
 
     embed = interactions.Embed(color=random.randint(0, 65536))
     embed.set_author(name=results[Columns.NAME])
@@ -268,6 +317,7 @@ async def send_embed(ctx, results):
         f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
     channel = await ctx.get_channel()
     await channel.send(embeds=embed)
+
 
 
 def gc_init():
@@ -363,9 +413,33 @@ def new_user_row(wks):
                 return cell.row
 
 
+def get_table(guild_id):
+    if os.path.exists(f"./guilds/{guild_id}/stats.csv"):
+        return pd.read_csv(f"./guilds/{guild_id}/stats.csv")
+    else:
+        logging.error(f"We can't get table for guild id {guild_id}")
+
+
+async def save_changes(df, guild_id):
+    df.to_csv(f'./guilds/{guild_id}/stats.csv')
+
+
 @bot.event
 async def on_ready():
-    logging.info(f'logged in and init both sheets')
+    logging.info(f'logged in as {bot.name}')
+
+
+@bot.event
+async def on_guild_join(guild):
+    os.mkdir(f'./guilds/{guild.id}')
+    shutil.copy("./guilds/example/*", f"./guilds/{guild.id}/")
+    try:
+        sh = gc.open(guild.id)
+    except SpreadsheetNotFound as ex:
+        logging.info(f'{guild.id} doesnt have sheet, creating')
+        gc.create(guild.id)
+
+
 worksheet = gc_init()
 worksheet_nonclan = gc_nonclan_init()
 bot.start()
