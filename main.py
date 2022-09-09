@@ -4,6 +4,7 @@ from pygsheets.exceptions import SpreadsheetNotFound
 import pygsheets
 import interactions
 import logging
+from time import sleep
 import os
 import shutil
 import pandas as pd
@@ -193,7 +194,7 @@ async def show_command(ctx, worksheet, name):
         return
 
     async def show_command_test(ctx, name):
-        df = get_table(guild_id)
+        df = get_table(guild_id, lock=False)
         if name is None:
             if df.loc[(df['Name'] == ctx.author.name)].empty:
                 await ctx.send("you haven't put in your info yet!")
@@ -204,9 +205,8 @@ async def show_command(ctx, worksheet, name):
             if df.loc[(df['Name'] == ctx.author.name)].empty:
                 await ctx.send("that person hasn't put in their info yet!")
             else:
-                #send embed
+                # send embed
                 ...
-        
 
 
 async def set_command(ctx, worksheet, to_check):
@@ -254,12 +254,25 @@ async def set_command(ctx, worksheet, to_check):
     await ctx.send(f'Could not update user.', ephemeral=True)
     return
 
-    async def _testing_function():
+    async def _testing_function(ctx, guild_id, to_check):
+        await ctx.send('Updating...')
         df = get_table(guild_id)
-        columns = ['Name', 
-                   "Availability", 
-                   "PVP CR", 
-                   "Character CR", 
+        while os.path.isfile(f'./guilds/{guild_id}/db.lock'):
+            seconds = 1
+            await ctx.send("Please wait, waiting turn for lock. This shouldn't take longer than 5 minutes.")
+            sleep(seconds)
+            seconds *= 2
+            if seconds > 128:  # checks for 256, after doubling it is 4.25 minutes.
+                # TODO better log
+                logging.warning(
+                    'set command timed out for longer than 5 minutes, please check.')
+                os.remove(f'./guilds/{guild_id}/db.lock')
+
+        await ctx.send('Updating...')
+        columns = ['Name',
+                   "Availability",
+                   "PVP CR",
+                   "Character CR",
                    "Resonance",
                    "Paragon Level",
                    "Paragon Tree",
@@ -267,9 +280,21 @@ async def set_command(ctx, worksheet, to_check):
         stats = []
         for stat in to_check:
             stats.append(stat[0])
-        
-        # do your checks and normalization here
-        # -1, too long, None/NaN -> Not Set
+
+        if stats[2] == -1:
+            stats[2] = "Max"  # see line 88
+
+        for index, stat in enumerate(stats):
+            try:
+                if len(stat) > 1024:
+                    # TODO log instance
+                    await ctx.send('One of your inputs is longer than 1024 characters, consider rewriting.')
+                    return
+            except TypeError as ex:
+                pass  # tested int
+            if stat == "None" or stat == "NaN":
+                stats[index] = "Not Set"
+
         if df.loc[(df['Name'] == ctx.author.name)].empty:
             df = pd.concat([df, pd.DataFrame([stats], columns=columns)])
         else:
@@ -277,8 +302,6 @@ async def set_command(ctx, worksheet, to_check):
             for column, stat in zip(columns, stats):
                 df.loc[index, [column]] = stat
         save_changes(df, guild_id)
-
-        # check on pc for rest
 
 
 async def send_embed(ctx, results):
@@ -290,7 +313,6 @@ async def send_embed(ctx, results):
         if not value:
             logging.debug(f'Set {results[key]} to "Not Set"')
             results[key] = "Not Set"
-
 
     # look into EmbedImageStruct for images
 
@@ -317,7 +339,6 @@ async def send_embed(ctx, results):
         f'Sending embed with author {embed.author.name} and value fields: \n{debug}')
     channel = await ctx.get_channel()
     await channel.send(embeds=embed)
-
 
 
 def gc_init():
@@ -413,8 +434,10 @@ def new_user_row(wks):
                 return cell.row
 
 
-def get_table(guild_id):
+def get_table(guild_id, lock=True):
     if os.path.exists(f"./guilds/{guild_id}/stats.csv"):
+        if lock:
+            open(f"./guilds/{guild_id}/db.lock", "w")
         return pd.read_csv(f"./guilds/{guild_id}/stats.csv")
     else:
         logging.error(f"We can't get table for guild id {guild_id}")
@@ -422,6 +445,7 @@ def get_table(guild_id):
 
 async def save_changes(df, guild_id):
     df.to_csv(f'./guilds/{guild_id}/stats.csv')
+    os.remove(f'./guilds/{guild_id}/db.lock')
 
 
 @bot.event
