@@ -311,13 +311,6 @@ async def set_command(ctx, worksheet, to_check):
         return
 
 
-def _stat_normalization(guild_id, name):
-    """Helper function
-    Finds corresponding user and returns a nice list of stats
-    """
-    ...
-
-
 async def send_embed(ctx, results):
     """
     Creates a pretty embed for the bot to send in the context provided
