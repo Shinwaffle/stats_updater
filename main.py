@@ -445,7 +445,10 @@ def get_table(guild_id, lock=True):
 
 async def save_changes(df, guild_id):
     df.to_csv(f'./guilds/{guild_id}/stats.csv')
-    os.remove(f'./guilds/{guild_id}/db.lock')
+    try:
+        os.remove(f'./guilds/{guild_id}/db.lock')
+    except FileNotFoundError as ex:
+        pass
 
 
 @bot.event
