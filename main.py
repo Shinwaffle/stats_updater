@@ -14,8 +14,8 @@ from time import sleep
 import os
 import shutil
 import pandas as pd
-TOKEN = "OTk2MjUwMDM4NzY4NTIxMzQ2.GH7vyQ.5PeEm_vHTh03oDl-hmFV4SfGDYOBbO6sZGjgAo"
-PYGSHEETS_BOTACC_PATH = ".messager.json"
+TOKEN = os.environ['TOKEN']
+PYGSHEETS_BOTACC_PATH = os.environ['PYGSHEETS_BOTACC_PATH']
 
 logging.basicConfig(level=logging.INFO)
 
