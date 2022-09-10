@@ -105,10 +105,11 @@ async def cmd(ctx: interactions.CommandContext, role=None, email=None):
     ],
 )
 async def cmd(ctx: interactions.CommandContext, sub_command: str, file: interactions.Attachment = None):
+    await ctx.defer(ephemeral=True)
     with open(f'./guilds/{ctx.guild_id}/stats.csv', 'wb') as f:
         response = get(file.url)
         f.write(response.content)
-    await ctx.send('i think i did it?')
+    await ctx.send('saved')
 
 
 @bot.command(
@@ -298,7 +299,7 @@ async def set_command(ctx, guild_id, to_check):
                 return
         except TypeError as ex:
             pass  # tested int
-        if stat is None or stat == "NaN":
+        if stat is None or (stat != stat):
             stats[index] = "Not Set"
 
     if df.loc[(df['Name'] == ctx.author.name)].empty:
@@ -324,6 +325,9 @@ async def send_embed(ctx, results):
     # these come from the pandas df
     for index, stat in enumerate(results):
         if isinstance(stat, str):
+            continue
+        if stat != stat:  # NaN check
+            results[index] = 'Not Set'
             continue
         results[index] = int(stat)
 
